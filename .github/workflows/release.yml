@@ -86,8 +86,14 @@ jobs:
 
       - name: Run and test
         run: |
-          echo "1" | ./build/lab2
+          # Передаем файл в программу через stdin
+          cat ip_filter.tsv | ./build/lab2
           echo "Program executed successfully"
+
+      - name: Run tests
+        run: |
+          cd build
+          ./test_ip
 
       - name: Verify version
         run: |
@@ -133,8 +139,14 @@ jobs:
 
       - name: Run and test
         run: |
-          echo "1" | .\build\lab2.exe
+          # Передаем файл в программу через stdin
+          Get-Content ip_filter.tsv | .\build\lab2.exe
           echo "Program executed successfully"
+
+      - name: Run tests
+        run: |
+          cd build
+          .\test_ip.exe
 
       - name: Verify version
         run: |

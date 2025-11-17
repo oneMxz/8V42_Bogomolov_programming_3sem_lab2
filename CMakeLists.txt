@@ -38,3 +38,6 @@ target_link_libraries(test_ip PRIVATE gtest gtest_main)
 
 # Добавляем тесты в систему тестирования CMake
 add_test(NAME IPFilterTest COMMAND test_ip)
+
+# Копируем файл с данными в директорию сборки для тестов
+configure_file(${CMAKE_SOURCE_DIR}/ip_filter.tsv ${CMAKE_BINARY_DIR}/ip_filter.tsv COPYONLY)

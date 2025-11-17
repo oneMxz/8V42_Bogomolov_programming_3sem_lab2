@@ -1,10 +1,5 @@
 #include "ip_filter.h"
 #include <iostream>
-#include <fstream>
-
-#include "ip_filter.h"
-#include <iostream>
-#include <fstream>
 
 
 void print_ips(const IPPool& ip_pool) {
@@ -17,22 +12,12 @@ int main() {
     try {
         IPPool ip_pool;
         
-        // Чтение данных из файла
-        std::ifstream file("ip_filter.tsv");
-        if (!file.is_open()) {
-            std::cerr << "Cannot open ip_filter.tsv" << std::endl;
-            return 1;
-        }
-        
-        std::string line;
-        while (std::getline(file, line)) {
+        for (std::string line; std::getline(std::cin, line);) {
             auto fields = split(line, '\t');
             if (!fields.empty() && is_valid_ip(fields[0])) {
                 ip_pool.push_back(parse_ip(fields[0]));
             }
         }
-        file.close();
-        
         // Сортировка
         sort_ips(ip_pool);
         
