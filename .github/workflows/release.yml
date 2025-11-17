@@ -1,0 +1,161 @@
+name: C++ CI
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    outputs:
+      new_tag: ${{ steps.bump_version.outputs.new_tag }}
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Get latest tag
+        id: get_tag
+        run: |
+          git fetch --tags --force
+          # Получаем тег с наибольшей версией или используем v0.0.0 по умолчанию
+          last_tag=$(git tag -l "v*" --sort=-version:refname | head -n 1 || echo "")
+          if [ -z "$last_tag" ]; then
+            last_tag="v0.0.0"
+          fi
+          echo "last_tag=$last_tag" >> $GITHUB_OUTPUT
+          echo "LAST_TAG=$last_tag" >> $GITHUB_ENV
+
+      - name: Bump version
+        id: bump_version
+        run: |
+          # Удаляем 'v' и разбиваем на компоненты
+          version="${LAST_TAG#v}"
+          IFS='.' read -r major minor patch <<< "$version"
+          
+          # Защита от пустых значений
+          if [ -z "$major" ]; then major=0; fi
+          if [ -z "$minor" ]; then minor=0; fi
+          if [ -z "$patch" ]; then patch=0; fi
+          
+          # Увеличиваем патч-версию
+          patch=$((patch + 1))
+          new_tag="v${major}.${minor}.${patch}"
+          
+          echo "new_tag=$new_tag" >> $GITHUB_OUTPUT
+          echo "NEW_TAG=$new_tag" >> $GITHUB_ENV
+          echo "Увеличили версию с $LAST_TAG до $new_tag"
+
+      - name: Show version info
+        run: |
+          echo "Last tag: $LAST_TAG"
+          echo "New tag: $NEW_TAG"
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ env.NEW_TAG }}
+          name: Release ${{ env.NEW_TAG }}
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build-linux:
+    needs: create-release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Clean build directory
+        run: rm -rf build
+
+      - name: Install Ninja
+        run: sudo apt-get update && sudo apt-get install -y ninja-build
+
+      - name: Configure with Ninja
+        run: |
+          echo "Building version: ${{ needs.create-release.outputs.new_tag }}"
+          cmake -G "Ninja" -S . -B build -DVERSION_PROJECT="${{ needs.create-release.outputs.new_tag }}"
+
+      - name: Build project
+        run: cmake --build build
+
+      - name: Run and test
+        run: |
+          echo "1" | ./build/lab2
+          echo "Program executed successfully"
+
+      - name: Verify version
+        run: |
+          echo "=== Program output ==="
+          output=$(echo "1" | ./build/lab1)
+          echo "$output"
+          if echo "$output" | grep -q "Version"; then
+            echo "✓ Version found in output"
+          else
+            echo "✗ Version not found in output"
+          fi
+
+      - name: Package (Linux)
+        run: |
+          cmake --install build --prefix package
+          cpack -G DEB --config build/CPackConfig.cmake
+
+      - name: Upload Linux package
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ needs.create-release.outputs.new_tag }}
+          files: lab2-*.deb
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build-windows:
+    needs: create-release
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Clean build directory
+        run: |
+          Remove-Item -Recurse -Force build -ErrorAction SilentlyContinue
+
+      - name: Configure with Ninja
+        run: |
+          echo "Building version: ${{ needs.create-release.outputs.new_tag }}"
+          cmake -G "Ninja" -S . -B build -DVERSION_PROJECT="${{ needs.create-release.outputs.new_tag }}"
+
+      - name: Build project
+        run: cmake --build build
+
+      - name: Run and test
+        run: |
+          echo "1" | .\build\lab2.exe
+          echo "Program executed successfully"
+
+      - name: Verify version
+        run: |
+          echo "=== Program output ==="
+          $output = echo "1" | .\build\lab2.exe
+          echo $output
+          if ($output -like "*Version*") {
+            echo "✓ Version found in output"
+          } else {
+            echo "✗ Version not found in output"
+          }
+
+      - name: Package (Windows)
+        run: |
+          cmake --install build --prefix package
+          cpack -G ZIP --config build/CPackConfig.cmake
+
+      - name: Upload Windows package
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ needs.create-release.outputs.new_tag }}
+          files: lab2-*.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
