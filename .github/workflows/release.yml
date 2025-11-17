@@ -98,7 +98,7 @@ jobs:
       - name: Verify version
         run: |
           echo "=== Program output ==="
-          output=$(echo "1" | ./build/lab1)
+          output=$(echo "1" | ./build/lab2)
           echo "$output"
           if echo "$output" | grep -q "Version"; then
             echo "✓ Version found in output"
