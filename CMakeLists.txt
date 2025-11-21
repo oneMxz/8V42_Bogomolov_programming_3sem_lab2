@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.14)
 project(lab2 VERSION 0.1.0 LANGUAGES C CXX)
 
-# Установка стандарта C++14
+# Установка стандарта 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -13,8 +13,6 @@ add_executable(lab2
 
 # Тесты
 enable_testing()
-
-# Более надежная настройка Google Test
 include(FetchContent)
 
 # Используем стабильную версию GTest
@@ -40,14 +38,12 @@ add_test(NAME IPFilterTest COMMAND test_ip)
 # Копируем файл с данными в директорию сборки для тестов
 configure_file(${CMAKE_SOURCE_DIR}/ip_filter.tsv ${CMAKE_BINARY_DIR}/ip_filter.tsv COPYONLY)
 
-# === НАСТРОЙКА CPack КАК В РАБОЧЕМ ПРИМЕРЕ ===
 # Настройка CPack для создания пакетов
 set(CPACK_PACKAGE_NAME "lab2")
-set(CPACK_PACKAGE_VERSION ${PROJECT_VERSION})  # ← Важно: используем версию проекта
+set(CPACK_PACKAGE_VERSION ${PROJECT_VERSION})  
 set(CPACK_PACKAGE_VENDOR "Bogomolov")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "IP Filter Application")
 
-# Для разных платформ
 if(WIN32)
     set(CPACK_GENERATOR "ZIP")
 endif()

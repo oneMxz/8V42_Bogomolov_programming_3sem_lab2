@@ -22,16 +22,9 @@ int main() {
         sort_ips(ip_pool);
         
         // Вывод результатов
-        std::cout << "All IPs sorted:" << std::endl;
         print_ips(ip_pool);
-        
-        std::cout << "\nIPs with first byte = 1:" << std::endl;
         print_ips(filter_ips(ip_pool, filters::first_byte(1)));
-        
-        std::cout << "\nIPs with 46.70.x.x:" << std::endl;
         print_ips(filter_ips(ip_pool, filters::first_and_second_byte(46, 70)));
-        
-        std::cout << "\nIPs with any byte = 46:" << std::endl;
         print_ips(filter_ips(ip_pool, filters::any_byte(46)));
 
     } catch (const std::exception& e) {
