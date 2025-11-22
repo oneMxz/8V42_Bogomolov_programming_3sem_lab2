@@ -23,7 +23,6 @@ IPPool filter_ips(const IPPool& ip_pool, std::function<bool(const IPAddress&)> p
 
 // Фабрика предикатов для фильтрации
 namespace filters {
-    // Явно указываем возвращаемый тип вместо auto
     std::function<bool(const IPAddress&)> first_byte(int byte);
     std::function<bool(const IPAddress&)> first_and_second_byte(int first, int second);
     std::function<bool(const IPAddress&)> any_byte(int byte);

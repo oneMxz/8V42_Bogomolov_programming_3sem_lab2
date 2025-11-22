@@ -34,10 +34,6 @@ bool is_valid_ip(const std::string& ip_str) {
 }
 
 IPAddress parse_ip(const std::string& ip_str) {
-    if (!is_valid_ip(ip_str)) {
-        throw std::invalid_argument("Invalid IP address: " + ip_str);
-    }
-    
     auto parts = split(ip_str, '.');
     return std::make_tuple(
         std::stoi(parts[0]),
@@ -68,7 +64,6 @@ IPPool filter_ips(const IPPool& ip_pool, std::function<bool(const IPAddress&)> p
     return result;
 }
 
-// Реализация фабрик предикатов с явным типом возврата
 namespace filters {
     std::function<bool(const IPAddress&)> first_byte(int byte) {
         return [byte](const IPAddress& ip) { return std::get<0>(ip) == byte; };

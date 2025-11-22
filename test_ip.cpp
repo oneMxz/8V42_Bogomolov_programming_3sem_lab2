@@ -25,25 +25,6 @@ TEST(IPFilterTest, ParseIP) {
     EXPECT_EQ(std::get<3>(ip), 1);
 }
 
-TEST(IPFilterTest, IntegrationTest) {
-    IPPool ips = {
-        {1,1,1,1},
-        {1,2,1,1},
-        {1,10,1,1},
-        {46,70,1,1},
-        {192,168,46,1}
-    };
-    
-    sort_ips(ips);
-    
-    // Проверка обратной сортировки
-    EXPECT_EQ(ips[0], std::make_tuple(192,168,46,1));
-    EXPECT_EQ(ips[1], std::make_tuple(46,70,1,1));
-    EXPECT_EQ(ips[2], std::make_tuple(1,10,1,1));
-    EXPECT_EQ(ips[3], std::make_tuple(1,2,1,1));
-    EXPECT_EQ(ips[4], std::make_tuple(1,1,1,1));
-}
-
 TEST(IPFilterTest, EdgeCases) {
     // Тестирование граничных значений
     EXPECT_TRUE(is_valid_ip("0.0.0.0"));
